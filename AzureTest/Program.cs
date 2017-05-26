@@ -19,7 +19,14 @@ namespace AzureTest
 
             CreateNewQueue(uri, tokenProvider);
 
-            AddNewMessage("1", "test", "TestQueue");
+            while (true)
+            {
+                Console.Write("Enter message, or press [Enter] to exit: ");
+                string message = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(message)) break;
+
+                AddNewMessage("1", message, "TestQueue");
+            }
 
             Console.WriteLine("Done");
             Console.ReadLine();
