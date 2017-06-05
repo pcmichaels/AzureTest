@@ -19,8 +19,13 @@ namespace AzureTestRead
             }
             else
             {
-                string message = ReadMessage("TestQueue");
-                Console.WriteLine($"Message received: {message}");
+                while (true)
+                {
+                    string message = ReadMessage("TestQueue");
+
+                    if (string.IsNullOrWhiteSpace(message)) break;
+                    Console.WriteLine($"{DateTime.Now}: Message received: {message}");
+                }
             }
 
             Console.WriteLine("Done");
@@ -40,8 +45,12 @@ namespace AzureTestRead
         {
             QueueClient client = QueueManagementHelper.GetQueueClient(queueName);
 
-            BrokeredMessage message = client.Receive();
+            BrokeredMessage message = client.Receive(new TimeSpan(0, 2, 0));
+            if (message == null) return string.Empty;
             string messageBody = message.GetBody<string>();
+
+            message.Complete();
+
             return messageBody;
         }
     }

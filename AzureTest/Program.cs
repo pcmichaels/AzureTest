@@ -20,6 +20,31 @@ namespace AzureTest
 
             CreateNewQueue(uri, tokenProvider);
 
+            Console.WriteLine("Size of message to send: ");
+            string messageSizeStr = Console.ReadLine();
+            string message = string.Empty;
+
+            if (int.TryParse(messageSizeStr, out int messageSizeInt))
+                message = new string('A', messageSizeInt);
+            else
+                throw new Exception("Must enter integer");
+
+            Console.WriteLine("Number of times: ");
+            string iterations = Console.ReadLine();
+            if (int.TryParse(iterations, out int iterationsInt))
+            {
+                for (int i = 1; i <= iterationsInt; i++)
+                {
+                    string messageToSend = $"{message}{i}";
+                    Console.WriteLine($"{DateTime.Now} Adding message {messageToSend} {i}");
+                    AddNewMessage("1", messageToSend, "TestQueue");
+                }
+            }
+            else
+            {
+                throw new Exception("Not a number");
+            }
+            /*
             while (true)
             {
                 Console.Write("Enter message, or press [Enter] to exit: ");
@@ -28,6 +53,7 @@ namespace AzureTest
 
                 AddNewMessage("1", message, "TestQueue");
             }
+            */
 
             Console.WriteLine("Done");
             Console.ReadLine();
@@ -53,7 +79,7 @@ namespace AzureTest
         }
 
         private static void AddNewMessage(string id, string messageBody, string queueName)
-        {
+        {            
             BrokeredMessage message = new BrokeredMessage(messageBody)
             {
                 MessageId = id
