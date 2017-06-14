@@ -9,16 +9,16 @@ namespace AzureTest.Helpers
 {
     public class QueueManagementHelper
     {
-        public static QueueClient GetQueueClient(string queueName)
+        public static QueueClient GetQueueClient(string queueName, bool requireAck)
         {
             string connectionString = GetConnectionString();
 
-            QueueClient queueClient = QueueClient.CreateFromConnectionString(connectionString, queueName);
+            QueueClient queueClient = QueueClient.CreateFromConnectionString(connectionString, queueName, requireAck ? ReceiveMode.PeekLock : ReceiveMode.PeekLock);
 
             return queueClient;
         }
 
-        private static string GetConnectionString()
+        public static string GetConnectionString()
         {
             return "Endpoint=sb://pcm-servicebustest.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=JWh82nkstIAi4w5tW6MEj7GKQfoiZlwBYjHx9wfDqdA=";
 

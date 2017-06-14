@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AzureTestRead
+namespace AzureTest.Monitor
 {
     class Program
     {
@@ -18,22 +18,40 @@ namespace AzureTestRead
 
             if (!InitialiseClient())
             {
-                Console.WriteLine("Unable to initialise client");                
+                Console.WriteLine("Unable to initialise client");
             }
             else
             {
                 while (true)
                 {
-                    string message = ReadMessage("TestQueue");
+                    string message = ReadMessage("TestQueue/$DeadLetterQueue");
 
                     if (string.IsNullOrWhiteSpace(message)) break;
                     Console.WriteLine($"{DateTime.Now}: Message received: {message}");
+
+                    Console.WriteLine($"{DateTime.Now}: Send e-mail");
+                    SendEmail(message);
                 }
             }
 
             sw.Stop();
             Console.WriteLine($"Done ({sw.Elapsed.TotalSeconds}) seconds");
             Console.ReadLine();
+        }
+
+        private static void SendEmail(string messageText)
+        {
+            System.Net.Mail.MailMessage message = new System.Net.Mail.MailMessage();
+            message.To.Add("@hotmail.co.uk");
+            message.Subject = "Message in queue has expired";
+            message.From = new System.Net.Mail.MailAddress("@hotmail.co.uk");
+            message.Body = messageText;
+            System.Net.Mail.SmtpClient smtp = new System.Net.Mail.SmtpClient("smtp.live.com");
+            smtp.Port = 587;
+            smtp.UseDefaultCredentials = false;
+            smtp.Credentials = new System.Net.NetworkCredential("@hotmail.co.uk", "");
+            smtp.EnableSsl = true;
+            smtp.Send(message);
         }
 
         private static bool InitialiseClient()
@@ -46,16 +64,18 @@ namespace AzureTestRead
         }
 
         private static string ReadMessage(string queueName)
-        {            
+        {
             QueueClient client = QueueManagementHelper.GetQueueClient(queueName, true);
 
-            BrokeredMessage message = client.Receive(new TimeSpan(0, 0, 30));            
+            BrokeredMessage message = client.Receive();
             if (message == null) return string.Empty;
             string messageBody = message.GetBody<string>();
 
-            message.Complete();
+            //message.Complete();
 
             return messageBody;
         }
+
     }
 }
+

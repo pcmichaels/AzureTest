@@ -31,6 +31,10 @@ namespace AzureTest
 
             Console.WriteLine("Number of times: ");
             string iterations = Console.ReadLine();
+
+            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
+
             if (int.TryParse(iterations, out int iterationsInt))
             {
                 for (int i = 1; i <= iterationsInt; i++)
@@ -44,18 +48,9 @@ namespace AzureTest
             {
                 throw new Exception("Not a number");
             }
-            /*
-            while (true)
-            {
-                Console.Write("Enter message, or press [Enter] to exit: ");
-                string message = Console.ReadLine();
-                if (string.IsNullOrWhiteSpace(message)) break;
 
-                AddNewMessage("1", message, "TestQueue");
-            }
-            */
-
-            Console.WriteLine("Done");
+            sw.Stop();
+            Console.WriteLine($"Done ({sw.Elapsed.TotalSeconds})");
             Console.ReadLine();
         }
 
@@ -72,8 +67,13 @@ namespace AzureTest
             else
             {
                 Console.WriteLine("Creating new queue");
-                QueueDescription qd = nm.CreateQueue("TestQueue");
-            }
+                QueueDescription qd = new QueueDescription("TestQueue")
+                {
+                    DefaultMessageTimeToLive = new TimeSpan(0, 0, 30),
+                    EnableDeadLetteringOnMessageExpiration = true
+                };
+                nm.CreateQueue(qd);
+            }            
 
             return nm;
         }
@@ -82,10 +82,10 @@ namespace AzureTest
         {            
             BrokeredMessage message = new BrokeredMessage(messageBody)
             {
-                MessageId = id
+                MessageId = id 
             };
 
-            QueueClient queueClient = QueueManagementHelper.GetQueueClient(queueName);   
+            QueueClient queueClient = QueueManagementHelper.GetQueueClient(queueName, false);               
             queueClient.Send(message);
         }
     }
